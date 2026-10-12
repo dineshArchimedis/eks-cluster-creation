@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: jenkins-master
+  namespace: jenkins
+spec:
+  serviceName: jenkins-master
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: jenkins-master
+
+  template:
+    metadata:
+      labels:
+        app: jenkins-master
+
+    spec:
+      securityContext:
+        fsGroup: 1000
+
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts-jdk21
+
+          ports:
+            - name: http
+              containerPort: 8080
+
+            - name: agent
+              containerPort: 50000
+
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home
+
+      volumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: jenkins-home-pvc
