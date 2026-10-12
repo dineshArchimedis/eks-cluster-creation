@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-agent-1
+  namespace: jenkins
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: jenkins-agent-1
+
+  template:
+    metadata:
+      labels:
+        app: jenkins-agent-1
+
+    spec:
+      containers:
+        - name: agent
+          image: jenkins/inbound-agent:latest
+
+          env:
+            - name: JENKINS_URL
+              value: "http://jenkins-master.jenkins.svc.cluster.local:8080"
+
+            - name: JENKINS_AGENT_NAME
+              value: "agent-1"
+
+            - name: JENKINS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-agent-1-secret
+                  key: secret
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+
+            limits:
+              cpu: "1"
+              memory: "2Gi"
